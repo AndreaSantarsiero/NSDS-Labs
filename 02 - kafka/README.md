@@ -22,3 +22,7 @@ For example on Linux for TopicManager
 ```bash
 ./start.sh admin.TopicManager topicA
 ```
+
+To gracefully shutdown a running program, you can press `Enter`.
+In most cases it should stop the program and close connections, avoiding weird errors
+for the next run of the same program.
