@@ -5,11 +5,13 @@ import java.io.IOException;
 public class GracefulShutdown {
 
     private final Thread shutdownThread;
+    private final Runnable callback;
     private boolean requestedShutdown;
 
-    public GracefulShutdown() {
+    public GracefulShutdown(Runnable callback) {
         shutdownThread = new Thread(this::readListener, "graceful-shutdown");
         shutdownThread.setDaemon(true);
+        this.callback = callback;
         requestedShutdown = false;
     }
 
@@ -19,6 +21,9 @@ public class GracefulShutdown {
         } catch (IOException ignored) {
         }
         requestedShutdown = true;
+        if (callback != null) {
+            callback.run();
+        }
     }
 
     public void start() {
@@ -34,7 +39,11 @@ public class GracefulShutdown {
     }
 
     public static GracefulShutdown startDaemon() {
-        final GracefulShutdown daemon = new GracefulShutdown();
+        return startDaemon(null);
+    }
+
+    public static GracefulShutdown startDaemon(Runnable callback) {
+        final GracefulShutdown daemon = new GracefulShutdown(callback);
         daemon.start();
         return daemon;
     }

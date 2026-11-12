@@ -1,6 +1,10 @@
 package it.polimi.middleware.kafka.basic;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -9,6 +13,8 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
+
+import it.polimi.middleware.kafka.common.GracefulShutdown;
 
 public class BasicProducer {
     private static final String defaultTopic = "topicA";
@@ -34,7 +40,8 @@ public class BasicProducer {
         final KafkaProducer<String, String> producer = new KafkaProducer<>(props);
         final Random r = new Random();
 
-        for (int i = 0; i < numMessages; i++) {
+        final var gsDaemon = GracefulShutdown.startDaemon();
+        for (int i = 0; i < numMessages && !gsDaemon.requestedShutdown(); i++) {
             final String topic = topics.get(r.nextInt(topics.size()));
             final String key = "Key" + r.nextInt(1000);
             final String value = "Val" + i;
