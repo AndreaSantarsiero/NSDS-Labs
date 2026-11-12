@@ -6,19 +6,24 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import it.polimi.middleware.kafka.common.GracefulShutdown;
 
-public class Consumer2 {
+public class ProcessorForwarder {
     private static final String defaultGroupId = "groupB";
-    private static final String consumerTopic = "topicA";
-    private static final String producerTopic = "topicB";
+    private static final String defaultConsumerTopic = "topicA";
+    private static final String defaultProducerTopic = "topicB";
 
     private static final String serverAddr = "localhost:9092";
     private static final boolean autoCommit = true;
@@ -31,7 +36,8 @@ public class Consumer2 {
         // If there are arguments, use the first as group and the second as topic.
         // Otherwise, use default group and topic.
         String groupId = args.length >= 1 ? args[0] : defaultGroupId;
-        String topic = args.length >= 2 ? args[1] : consumerTopic;
+        String consumerTopic = args.length >= 2 ? args[1] : defaultConsumerTopic;
+        String producerTopic = args.length >= 3 ? args[2] : defaultProducerTopic;
 
         final Properties consumerProps = new Properties();
         consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
@@ -45,7 +51,7 @@ public class Consumer2 {
         consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps);
-        consumer.subscribe(Collections.singletonList(topic));
+        consumer.subscribe(Collections.singletonList(consumerTopic));
 
         final Properties producerProps = new Properties();
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
@@ -54,13 +60,27 @@ public class Consumer2 {
 
         final KafkaProducer<String, String> producer = new KafkaProducer<>(producerProps);
 
-        while (true) {
-            final ConsumerRecords<String, String> records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
+        final var gsDaemon = GracefulShutdown.startDaemon(consumer::wakeup);
+        while (!gsDaemon.requestedShutdown()) {
+            final ConsumerRecords<String, String> records;
+            try {
+                records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
+            } catch (WakeupException e) {
+                break;
+            }
             for (final ConsumerRecord<String, String> record : records) {
                 System.out.println("Received a new message: processing...");
-                final ProducerRecord<String, String> producerRecord = new ProducerRecord<>(producerTopic, record.key(), record.value().toLowerCase());
+                final ProducerRecord<String, String> producerRecord = new ProducerRecord<>(producerTopic, record.key(),
+                        record.value().toLowerCase());
                 final Future<RecordMetadata> future = producer.send(producerRecord);
+                try {
+                    future.get();
+                } catch (Exception ignored) {
+                    // TODO Maybe handle the write failure
+                }
             }
         }
+        consumer.close();
+        producer.close();
     }
 }

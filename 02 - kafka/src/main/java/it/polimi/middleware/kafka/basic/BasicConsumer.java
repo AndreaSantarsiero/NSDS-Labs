@@ -5,8 +5,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
+
+import it.polimi.middleware.kafka.common.GracefulShutdown;
 
 public class BasicConsumer {
     private static final String defaultGroupId = "groupA";
@@ -38,16 +44,22 @@ public class BasicConsumer {
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(topic));
-        while (true) {
-            final ConsumerRecords<String, String> records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
+        final var gsDaemon = GracefulShutdown.startDaemon(consumer::wakeup);
+        while (!gsDaemon.requestedShutdown()) {
+            final ConsumerRecords<String, String> records;
+            try {
+                records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
+            } catch (WakeupException e) {
+                break;
+            }
             for (final ConsumerRecord<String, String> record : records) {
                 System.out.print("Consumer group: " + groupId + "\t");
                 System.out.println("Partition: " + record.partition() +
                         "\tOffset: " + record.offset() +
                         "\tKey: " + record.key() +
-                        "\tValue: " + record.value()
-                );
+                        "\tValue: " + record.value());
             }
         }
+        consumer.close();
     }
 }
