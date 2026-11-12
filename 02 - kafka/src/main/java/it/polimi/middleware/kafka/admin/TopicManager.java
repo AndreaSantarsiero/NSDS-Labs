@@ -1,12 +1,17 @@
 package it.polimi.middleware.kafka.admin;
 
-import org.apache.kafka.clients.admin.*;
-
 import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
-public class TopicManager  {
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.DeleteTopicsResult;
+import org.apache.kafka.clients.admin.ListTopicsResult;
+import org.apache.kafka.clients.admin.NewTopic;
+
+public class TopicManager {
     private static final String defaultTopicName = "topicA";
     private static final int defaultTopicPartitions = 2;
     private static final short defaultReplicationFactor = 1;
@@ -30,15 +35,23 @@ public class TopicManager  {
             System.out.println("Deleting topic " + topicName);
             DeleteTopicsResult delResult = adminClient.deleteTopics(Collections.singletonList(topicName));
             delResult.all().get();
+            // Wait for the cluster real deletion since it can takes seconds
+            while (adminClient.listTopics().names().get().contains(topicName)) {
+                Thread.sleep(1000);
+            }
             System.out.println("Done!");
-            // Wait for the deletion
-            Thread.sleep(5000);
+
         }
 
         System.out.println("Adding topic " + topicName + " with " + topicPartitions + " partitions");
         NewTopic newTopic = new NewTopic(topicName, topicPartitions, replicationFactor);
         CreateTopicsResult createResult = adminClient.createTopics(Collections.singletonList(newTopic));
         createResult.all().get();
+        // Wait for the cluster real addition since it can takes seconds
+        while (!adminClient.listTopics().names().get().contains(topicName)) {
+            Thread.sleep(1000);
+        }
         System.out.println("Done!");
+        adminClient.close();
     }
 }
