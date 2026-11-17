@@ -1,0 +1,375 @@
+[
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "52b51a8f1ca6c44b",
+        "type": "openweathermap",
+        "z": "f6f2187d.f17ca8",
+        "name": "Meteo Milano",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 440,
+        "y": 240,
+        "wires": [
+            [
+                "9066a8891f8a0baf",
+                "8defcd169b50bd8f"
+            ]
+        ]
+    },
+    {
+        "id": "fbdd3b8f7cef4790",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "Trigger every minute",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 240,
+        "wires": [
+            [
+                "52b51a8f1ca6c44b"
+            ]
+        ]
+    },
+    {
+        "id": "9066a8891f8a0baf",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "Print Meteo Payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 840,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "8defcd169b50bd8f",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Tempc Processing",
+        "func": "let lastTemperature = context.get(\"lastTemperature\")\nlet tempc = msg.payload.tempc\n\n\nif (tempc > lastTemperature)\n    msg.payload.tempcFeedback = \"high\"\nelse if (tempc < lastTemperature)\n    msg.payload.tempcFeedback = \"low\"\nelse\n    msg.payload.tempcFeedback = \"equal\"\n\n\ncontext.set(\"lastTemperature\", tempc)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 270,
+        "y": 420,
+        "wires": [
+            [
+                "dec3cd8c10ad9a5a"
+            ]
+        ]
+    },
+    {
+        "id": "d06104f5f62e8363",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "Print H/L",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "dec3cd8c10ad9a5a",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Humidity Processing",
+        "func": "let lastHumidity = context.get(\"lastHumidity\")\nlet humidity = msg.payload.humidity\n\n\nif (humidity > lastHumidity)\n    msg.payload.humidityFeedback = \"high\"\nelse if (humidity < lastHumidity)\n    msg.payload.humidityFeedback = \"low\"\nelse\n    msg.payload.humidityFeedback = \"equal\"\n\n\ncontext.set(\"lastHumidity\", humidity)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 420,
+        "wires": [
+            [
+                "428876954cf6aa37"
+            ]
+        ]
+    },
+    {
+        "id": "428876954cf6aa37",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Prepare Message",
+        "func": "let message = \"\";\n\nmessage += \"tempcFeedback: \" + msg.payload.tempcFeedback\nmessage += \"\\nhumidityFeedback: \" + msg.payload.humidityFeedback\n\nmsg.payload = message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 420,
+        "wires": [
+            [
+                "d06104f5f62e8363"
+            ]
+        ]
+    },
+    {
+        "id": "cca01c53fdb7d395",
+        "type": "comment",
+        "z": "f6f2187d.f17ca8",
+        "name": "Esercizio 1",
+        "info": "",
+        "x": 140,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "e9e67944d44e7578",
+        "type": "openweathermap",
+        "z": "f6f2187d.f17ca8",
+        "name": "Meteo Milano",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 480,
+        "y": 900,
+        "wires": [
+            [
+                "4a68245c9198c835",
+                "8dbac5d35eb08db4"
+            ]
+        ]
+    },
+    {
+        "id": "eaa0e62a211e5730",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "Trigger every minute",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 220,
+        "y": 900,
+        "wires": [
+            [
+                "e9e67944d44e7578"
+            ]
+        ]
+    },
+    {
+        "id": "4a68245c9198c835",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "Print Meteo Payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "8dbac5d35eb08db4",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Tempc Processing",
+        "func": "let lastTemperature = global.get(\"lastTemperature\")\nlet tempc = msg.payload.tempc\n\nlet avgTemp = (tempc + lastTemperature) / 2\nmsg.payload.avgTemp = avgTemp\n\nglobal.set(\"lastTemperature\", tempc)\nglobal.set(\"avgTemp\", avgTemp)\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 1020,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "af348345e2a218b0",
+        "type": "comment",
+        "z": "f6f2187d.f17ca8",
+        "name": "Esercizio 2 Flow 1",
+        "info": "",
+        "x": 210,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "647e5f4fb78f8485",
+        "type": "openweathermap",
+        "z": "f6f2187d.f17ca8",
+        "name": "Meteo Milano",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 460,
+        "y": 1240,
+        "wires": [
+            [
+                "724b100c236cfa8b",
+                "2bbed076b3a9b4db"
+            ]
+        ]
+    },
+    {
+        "id": "8fcf2140337aca9e",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "Trigger every minute",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 200,
+        "y": 1240,
+        "wires": [
+            [
+                "647e5f4fb78f8485"
+            ]
+        ]
+    },
+    {
+        "id": "724b100c236cfa8b",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "Print Meteo Payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 860,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "2bbed076b3a9b4db",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Tempc Processing",
+        "func": "let lastTemperature = global.get(\"lastTemperature\")\nlet tempc = msg.payload.tempc\n\nlet avgTemp = (tempc + lastTemperature) / 2\nmsg.payload.avgTemp = avgTemp\n\nglobal.set(\"lastTemperature\", tempc)\nglobal.set(\"avgTemp\", avgTemp)\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 1360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "66c90347d04275ce",
+        "type": "comment",
+        "z": "f6f2187d.f17ca8",
+        "name": "Esercizio 2 Flow 1 - using a file",
+        "info": "",
+        "x": 230,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "0816f371b7999471",
+        "type": "file",
+        "z": "f6f2187d.f17ca8",
+        "name": "Append mean to file",
+        "filename": "/data/temp.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1020,
+        "y": 1420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c1eec1b4ea68da14",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]
