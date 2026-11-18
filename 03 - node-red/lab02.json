@@ -1,0 +1,299 @@
+[
+    {
+        "id": "0f878789f06582b5",
+        "type": "tab",
+        "label": "Exercise 5-0",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "e807c082b0b6d000",
+        "type": "chatbot-telegram-receive",
+        "z": "0f878789f06582b5",
+        "bot": "e145681d1fc7e143",
+        "botProduction": "",
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "5184967ff9bf82a8",
+                "ae42b865aecb52b5"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "479846ca84a0d730",
+        "type": "chatbot-telegram-send",
+        "z": "0f878789f06582b5",
+        "bot": "e145681d1fc7e143",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 870,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "5184967ff9bf82a8",
+        "type": "debug",
+        "z": "0f878789f06582b5",
+        "name": "Show Incoming Msg!",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 760,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "ae42b865aecb52b5",
+        "type": "function",
+        "z": "0f878789f06582b5",
+        "name": "Compute Answer",
+        "func": "delete msg.ts;\ndelete msg.transport;\nmsg.payload.inbound = false;\nmsg.payload.fallback = null;\n\n\nif (msg.payload.content.startsWith(\"My name is \")) {\n    return [msg, null, null]\n}\nelse if (msg.payload.content == \"What is the temperature in Milan?\") {\n    return [null, msg, null]\n}\nelse {\n    return [null, null, msg]\n}",
+        "outputs": 3,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 270,
+        "y": 280,
+        "wires": [
+            [
+                "be7ea94872eb0e88"
+            ],
+            [
+                "ba894d816d3f03fd"
+            ],
+            [
+                "bd0c58a43bee69c5"
+            ]
+        ]
+    },
+    {
+        "id": "ba7217012a685640",
+        "type": "openweathermap",
+        "z": "0f878789f06582b5",
+        "name": "Meteo Milano",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 460,
+        "y": 540,
+        "wires": [
+            [
+                "b724bf540c1f2430"
+            ]
+        ]
+    },
+    {
+        "id": "0e5ee9449a9df893",
+        "type": "inject",
+        "z": "0f878789f06582b5",
+        "name": "Trigger every minute",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 540,
+        "wires": [
+            [
+                "ba7217012a685640"
+            ]
+        ]
+    },
+    {
+        "id": "b724bf540c1f2430",
+        "type": "function",
+        "z": "0f878789f06582b5",
+        "name": "Update Weather Info",
+        "func": "let tempcMilano = msg.payload.tempc\n\nflow.set(\"tempcMilano\", tempcMilano)\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ba894d816d3f03fd",
+        "type": "function",
+        "z": "0f878789f06582b5",
+        "name": "Milan temp answer",
+        "func": "let temp = flow.get(\"tempcMilano\")\n\nlet message = \"[Andrea] The current temperature in Milan is \" + temp + \"C\"\n\nmsg.payload.content = message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 300,
+        "wires": [
+            [
+                "479846ca84a0d730"
+            ]
+        ]
+    },
+    {
+        "id": "bd0c58a43bee69c5",
+        "type": "function",
+        "z": "0f878789f06582b5",
+        "name": "Generic answer",
+        "func": "if (msg.payload.content == \"What's your name?\") {\n    msg.payload.content = \"[Andrea] I am the NSDS Telegram Bot!\";\n}\nelse if (msg.payload.content == \"Ciao\") {\n    msg.payload.content = \"[Andrea] Ciao!\";\n}\nelse {\n    msg.payload.content = \"[Andrea] I don't get what you're asking...\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 380,
+        "wires": [
+            [
+                "479846ca84a0d730"
+            ]
+        ]
+    },
+    {
+        "id": "be7ea94872eb0e88",
+        "type": "function",
+        "z": "0f878789f06582b5",
+        "name": "Greetings answer",
+        "func": "let name = msg.payload.content\nlet names = flow.get(\"names\") || []\n\nname = name.slice(11)\nname = name.replace(/[!,.;:]/g, '')\n\nif(!names.includes(name)){\n    names.push(name)\n    flow.set(\"names\", names);\n}\n\nlet message = \"Hello \" + name + \"!\"\n\nmsg.payload.content = message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nflow.set(\"names\", []);",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 220,
+        "wires": [
+            [
+                "479846ca84a0d730"
+            ]
+        ]
+    },
+    {
+        "id": "2fc06bda82acadad",
+        "type": "inject",
+        "z": "0f878789f06582b5",
+        "name": "Trigger debug",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 190,
+        "y": 660,
+        "wires": [
+            [
+                "f0587e3e2bbb052d"
+            ]
+        ]
+    },
+    {
+        "id": "61e4d9885ecd0245",
+        "type": "debug",
+        "z": "0f878789f06582b5",
+        "name": "Print names[]",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "f0587e3e2bbb052d",
+        "type": "function",
+        "z": "0f878789f06582b5",
+        "name": "Print names[]",
+        "func": "let names = flow.get(\"names\")\n\nmsg.payload = names\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 660,
+        "wires": [
+            [
+                "61e4d9885ecd0245"
+            ]
+        ]
+    },
+    {
+        "id": "e145681d1fc7e143",
+        "type": "chatbot-telegram-node",
+        "botname": "Node-RED Lab",
+        "polling": "1000",
+        "store": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "d55930aa850670b2",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-chatbot": "2.0.8",
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]
