@@ -1,0 +1,269 @@
+[
+    {
+        "id": "d73189f7bef27609",
+        "type": "tab",
+        "label": "Evaluation23",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "b4f8b3e4581eb36d",
+        "type": "chatbot-telegram-receive",
+        "z": "d73189f7bef27609",
+        "bot": "e145681d1fc7e143",
+        "botProduction": "",
+        "x": 150,
+        "y": 360,
+        "wires": [
+            [
+                "e14f853637947c3c",
+                "ae5148e0a9f19592"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "b52944fe8009c828",
+        "type": "openweathermap",
+        "z": "d73189f7bef27609",
+        "name": "Milan weather",
+        "wtype": "forecast",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 620,
+        "y": 300,
+        "wires": [
+            [
+                "264b274fd4a8e5e0"
+            ]
+        ]
+    },
+    {
+        "id": "e623b300920a2c86",
+        "type": "openweathermap",
+        "z": "d73189f7bef27609",
+        "name": "Rome weather",
+        "wtype": "forecast",
+        "lon": "",
+        "lat": "",
+        "city": "Rome",
+        "country": "IT",
+        "language": "en",
+        "x": 620,
+        "y": 360,
+        "wires": [
+            [
+                "264b274fd4a8e5e0"
+            ]
+        ]
+    },
+    {
+        "id": "e14f853637947c3c",
+        "type": "debug",
+        "z": "d73189f7bef27609",
+        "name": "Incoming Telegram Message",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 420,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "a030f19076be025f",
+        "type": "chatbot-telegram-send",
+        "z": "d73189f7bef27609",
+        "bot": "e145681d1fc7e143",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 1230,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "ae5148e0a9f19592",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "Parse",
+        "func": "let text = msg.payload.content.toLowerCase();\n\n// City\nlet city = null;\nif (text.includes(\"milan\") || text.includes(\"milano\")) city = \"Milan\";                       // \"milan\" and \"milano\"\nelse if (text.includes(\"rome\") || text.includes(\"roma\")) city = \"Rome\";\n\n// Kind of request\nlet kind = null;\nif (text.includes(\"wind\")) kind = \"wind\";\nelse if (text.includes(\"forecast\") || text.includes(\"weather\")) kind = \"forecast\";\n\n// Days: check first \"2 days\", since \"day after tomorrow\" contains \"tomorros\"\nlet days = null;\nif (/two days|2 days|day after tomorrow/.test(text)) days = 2;\nelse if (/tomorrow|one day|1 day/.test(text)) days = 1;\n\nif (city === null || kind === null || days === null) {\n    return [null, null, msg];       // unhandled request\n}\n\nmsg.query = { city: city, kind: kind, days: days };\nreturn (city === \"Milan\") ? [msg, null, null] : [null, msg, null];",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 360,
+        "wires": [
+            [
+                "b52944fe8009c828"
+            ],
+            [
+                "e623b300920a2c86"
+            ],
+            [
+                "88275ea622288c70"
+            ]
+        ]
+    },
+    {
+        "id": "264b274fd4a8e5e0",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "Answer",
+        "func": "let q = msg.query;\nlet entry = msg.payload[q.days * 8];    // +24h or +48h\n\nlet value = (q.kind === \"wind\")\n    ? entry.wind.speed\n    : entry.weather[0].description;\n\n// build the key for this message and check the previous answer\nlet key = q.kind + \"_\" + q.city + \"_\" + q.days;\nlet last = context.get(key);\nlet note;\nif (last === undefined) {\n    note = \"This is the first time I was asked!\";\n} else if (last === value) {\n    note = \"It is the same as the last time I was asked!\";\n} else {\n    note = \"It changed since the last time I was asked!\";\n}\ncontext.set(key, value);\n\n// count the served request\nlet counterKey = \"count_\" + q.kind;\nflow.set(counterKey, (flow.get(counterKey) || 0) + 1);\n\n// format answer\nlet when = (q.days === 1) ? \"tomorrow\" : \"in two days\";\nlet answer;\nif (q.kind === \"forecast\") {\n    answer = (q.days === 1) ? \"Tomorrow's forecast for \" + q.city\n        : \"The forecast for \" + q.city + \" in two days\";\n    answer += \" is \" + value + \"! \" + note;\n} else {\n    answer = \"Expected wind speed in \" + q.city + \" \" + when + \" is \" + value + \" m/s! \" + note;\n}\n\nmsg.payload = { text: answer };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 320,
+        "wires": [
+            [
+                "f0188bb43c8fe470"
+            ]
+        ]
+    },
+    {
+        "id": "f0188bb43c8fe470",
+        "type": "chatbot-message",
+        "z": "d73189f7bef27609",
+        "name": "Answer",
+        "message": [
+            {
+                "message": "{{payload.text}}"
+            }
+        ],
+        "language": "none",
+        "x": 1020,
+        "y": 320,
+        "wires": [
+            [
+                "a030f19076be025f"
+            ]
+        ]
+    },
+    {
+        "id": "88275ea622288c70",
+        "type": "chatbot-message",
+        "z": "d73189f7bef27609",
+        "name": "Help",
+        "message": [
+            {
+                "message": "Sorry, I didn't get that. Try for example:\n- forecast Milano tomorrow\n- wind Rome in two days"
+            }
+        ],
+        "language": "none",
+        "x": 590,
+        "y": 420,
+        "wires": [
+            [
+                "a030f19076be025f"
+            ]
+        ]
+    },
+    {
+        "id": "147ed0c1ec4e03b8",
+        "type": "inject",
+        "z": "d73189f7bef27609",
+        "name": "Trigger every minute",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 220,
+        "y": 580,
+        "wires": [
+            [
+                "03cceef87f30e280"
+            ]
+        ]
+    },
+    {
+        "id": "03cceef87f30e280",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "Log Counters",
+        "func": "let f = flow.get(\"count_forecast\") || 0;\nlet w = flow.get(\"count_wind\") || 0;\n\n// reset to zero\nflow.set(\"count_forecast\", 0);\nflow.set(\"count_wind\", 0);\n\nmsg.payload = new Date().toISOString() + \" forecast=\" + f + \" wind=\" + w;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nflow.set(\"count_forecast\", 0);\nflow.set(\"count_wind\", 0);",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 580,
+        "wires": [
+            [
+                "0b2034b7e9eb65fc"
+            ]
+        ]
+    },
+    {
+        "id": "0b2034b7e9eb65fc",
+        "type": "file",
+        "z": "d73189f7bef27609",
+        "name": "Store Logs",
+        "filename": "/data/queries_log.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 790,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e145681d1fc7e143",
+        "type": "chatbot-telegram-node",
+        "botname": "Node-RED Lab",
+        "polling": "1000",
+        "store": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "acd8f6dfb309b3d3",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-chatbot": "2.0.8",
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]
