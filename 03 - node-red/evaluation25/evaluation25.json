@@ -1,0 +1,313 @@
+[
+    {
+        "id": "d73189f7bef27609",
+        "type": "tab",
+        "label": "Evaluation25",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "b4f8b3e4581eb36d",
+        "type": "chatbot-telegram-receive",
+        "z": "d73189f7bef27609",
+        "bot": "e145681d1fc7e143",
+        "botProduction": "",
+        "x": 150,
+        "y": 360,
+        "wires": [
+            [
+                "e14f853637947c3c",
+                "ae5148e0a9f19592"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "b52944fe8009c828",
+        "type": "openweathermap",
+        "z": "d73189f7bef27609",
+        "name": "Weather",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "",
+        "country": "",
+        "language": "en",
+        "x": 1220,
+        "y": 200,
+        "wires": [
+            [
+                "a98d74745fb21471"
+            ]
+        ]
+    },
+    {
+        "id": "e14f853637947c3c",
+        "type": "debug",
+        "z": "d73189f7bef27609",
+        "name": "Incoming Telegram Message",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 300,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "a030f19076be025f",
+        "type": "chatbot-telegram-send",
+        "z": "d73189f7bef27609",
+        "bot": "e145681d1fc7e143",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 1110,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "ae5148e0a9f19592",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "Parse",
+        "func": "let text = msg.payload.content;\n\nlet message = text.split(\" \")\nlet type = message[0] || \"\"\nlet city = message[1] || \"\"\nlet country = message[2] || \"\"\n\nmsg.query = { type: type, city: city, country: country }\n\nif (type === \"QUERY\" || type === \"REPORT\")\n    return [msg, null, null]\nelse if (type === \"TRACK\")\n    return [null, msg, null]\nelse\n    return [null, null, msg]\n",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 360,
+        "wires": [
+            [
+                "445e8ad841d89ecc"
+            ],
+            [
+                "264b274fd4a8e5e0"
+            ],
+            [
+                "88275ea622288c70"
+            ]
+        ]
+    },
+    {
+        "id": "264b274fd4a8e5e0",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "TRACK answer",
+        "func": "let q = msg.query\nlet city = { city: q.city, country: q.country }\n\nlet key = String(msg.originalMessage.from.id)\nlet cities = flow.get(key) || []\nif (!cities.some(c => c.city === city.city && c.country === city.country)) {\n    cities.push(city);\n}\nflow.set(key, cities)\n\nlet answer = \"Tracking temperature for \" + q.city + \"!\"\nmsg.payload = { text: answer };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 460,
+        "wires": [
+            [
+                "f0188bb43c8fe470"
+            ]
+        ]
+    },
+    {
+        "id": "f0188bb43c8fe470",
+        "type": "chatbot-message",
+        "z": "d73189f7bef27609",
+        "name": "Answer",
+        "message": [
+            {
+                "message": "{{payload.text}}"
+            }
+        ],
+        "language": "none",
+        "x": 1060,
+        "y": 460,
+        "wires": [
+            [
+                "a030f19076be025f"
+            ]
+        ]
+    },
+    {
+        "id": "88275ea622288c70",
+        "type": "chatbot-message",
+        "z": "d73189f7bef27609",
+        "name": "Help",
+        "message": [
+            {
+                "message": "Sorry, I didn't get that. Try for example:\n- QUERY Milan IT\n- TRACK Rome IT\n- REPORT"
+            }
+        ],
+        "language": "none",
+        "x": 630,
+        "y": 580,
+        "wires": [
+            [
+                "a030f19076be025f"
+            ]
+        ]
+    },
+    {
+        "id": "445e8ad841d89ecc",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "Get cities",
+        "func": "let q = msg.query\nlet cities\n\nif(q.type === \"QUERY\"){\n    cities = [{ city: q.city, country: q.country }]\n}\nelse{\n    let key = String(msg.originalMessage.from.id)\n    cities = flow.get(key) || []\n}\n\nmsg.payload = cities\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 200,
+        "wires": [
+            [
+                "730d427555014ca5"
+            ]
+        ]
+    },
+    {
+        "id": "730d427555014ca5",
+        "type": "split",
+        "z": "d73189f7bef27609",
+        "name": "Split cities",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "property": "payload",
+        "x": 780,
+        "y": 200,
+        "wires": [
+            [
+                "c6334dd6120dd44b"
+            ]
+        ]
+    },
+    {
+        "id": "8784d99e743eb317",
+        "type": "join",
+        "z": "d73189f7bef27609",
+        "name": "Join results",
+        "mode": "auto",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "location",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 970,
+        "y": 340,
+        "wires": [
+            [
+                "8241187c67d1a21c"
+            ]
+        ]
+    },
+    {
+        "id": "c6334dd6120dd44b",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "Prepare request",
+        "func": "msg.location = msg.payload\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1000,
+        "y": 200,
+        "wires": [
+            [
+                "b52944fe8009c828"
+            ]
+        ]
+    },
+    {
+        "id": "a98d74745fb21471",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "Prepare answer",
+        "func": "let tempc = msg.payload.tempc\nlet city = msg.payload.location\n\nlet message = \"The temperature in \" + city + \" is \" + tempc + \"C!\"\n\nmsg.payload = message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 340,
+        "wires": [
+            [
+                "8784d99e743eb317"
+            ]
+        ]
+    },
+    {
+        "id": "8241187c67d1a21c",
+        "type": "function",
+        "z": "d73189f7bef27609",
+        "name": "Merge results",
+        "func": "msg.payload = { text: msg.payload.join(\"\\n\") };\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1200,
+        "y": 340,
+        "wires": [
+            [
+                "f0188bb43c8fe470"
+            ]
+        ]
+    },
+    {
+        "id": "e145681d1fc7e143",
+        "type": "chatbot-telegram-node",
+        "botname": "Node-RED Lab",
+        "polling": "1000",
+        "store": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "3455a8b34d8f1b79",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-chatbot": "2.0.8",
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]
