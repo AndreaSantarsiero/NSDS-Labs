@@ -26,7 +26,9 @@
         "x": 180,
         "y": 170,
         "wires": [
-            []
+            [
+                "70a950406ae7330f"
+            ]
         ]
     },
     {
@@ -49,7 +51,9 @@
         "x": 180,
         "y": 240,
         "wires": [
-            []
+            [
+                "70a950406ae7330f"
+            ]
         ]
     },
     {
@@ -60,6 +64,43 @@
         "info": "",
         "x": 630,
         "y": 70,
+        "wires": []
+    },
+    {
+        "id": "70a950406ae7330f",
+        "type": "function",
+        "z": "a6cb193398d49929",
+        "name": "Set threshold",
+        "func": "global.set(\"threshold\", msg.payload)\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 200,
+        "wires": [
+            [
+                "2698a683b38ca00a"
+            ]
+        ]
+    },
+    {
+        "id": "2698a683b38ca00a",
+        "type": "debug",
+        "z": "a6cb193398d49929",
+        "name": "Print threshold",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 200,
         "wires": []
     }
 ]

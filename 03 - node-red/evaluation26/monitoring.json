@@ -20,7 +20,9 @@
         "x": 140,
         "y": 120,
         "wires": [
-            []
+            [
+                "c5f857e7262a8cc9"
+            ]
         ]
     },
     {
@@ -42,7 +44,9 @@
         "x": 140,
         "y": 180,
         "wires": [
-            []
+            [
+                "c5f857e7262a8cc9"
+            ]
         ]
     },
     {
@@ -64,7 +68,9 @@
         "x": 140,
         "y": 240,
         "wires": [
-            []
+            [
+                "c5f857e7262a8cc9"
+            ]
         ]
     },
     {
@@ -91,7 +97,9 @@
         "x": 160,
         "y": 390,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -118,7 +126,9 @@
         "x": 160,
         "y": 450,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -145,7 +155,9 @@
         "x": 160,
         "y": 510,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -172,7 +184,9 @@
         "x": 160,
         "y": 570,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -199,7 +213,9 @@
         "x": 160,
         "y": 630,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -226,7 +242,9 @@
         "x": 160,
         "y": 690,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -253,7 +271,9 @@
         "x": 160,
         "y": 750,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -280,7 +300,9 @@
         "x": 160,
         "y": 810,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -307,7 +329,9 @@
         "x": 160,
         "y": 870,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -334,7 +358,9 @@
         "x": 160,
         "y": 930,
         "wires": [
-            []
+            [
+                "6c95ce7241f53c5e"
+            ]
         ]
     },
     {
@@ -351,7 +377,9 @@
         "x": 130,
         "y": 1110,
         "wires": [
-            []
+            [
+                "039aba88aabdf07f"
+            ]
         ]
     },
     {
@@ -363,5 +391,276 @@
         "x": 510,
         "y": 30,
         "wires": []
+    },
+    {
+        "id": "c5f857e7262a8cc9",
+        "type": "function",
+        "z": "1d1684a7eede910b",
+        "name": "Resetter",
+        "func": "let topic = msg.topic || null\nlet message = \"\"\n\nif (topic == \"A\"){\n    flow.set(\"counterA\", 0)\n    flow.set(\"latestA\", undefined)\n    message = \"Succesfully reset room A\"\n}\nelse if (topic == \"B\") {\n    flow.set(\"counterB\", 0)\n    flow.set(\"latestB\", undefined)\n    message = \"Succesfully reset room B\"\n}\nelse{\n    flow.set(\"counterA\", 0)\n    flow.set(\"counterB\", 0)\n    flow.set(\"latestA\", undefined)\n    flow.set(\"latestB\", undefined)\n    flow.set(\"alertCounter\", 0)\n    message = \"Succesfully reset room A and B\"\n}\n\nmsg.payload = message\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nflow.set(\"counterA\", 0)\nflow.set(\"counterB\", 0)\nflow.set(\"latestA\", undefined)\nflow.set(\"latestB\", undefined)\nflow.set(\"alertCounter\", 0)\n",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 180,
+        "wires": [
+            [
+                "2b838520d1cb30bc"
+            ]
+        ]
+    },
+    {
+        "id": "2b838520d1cb30bc",
+        "type": "debug",
+        "z": "1d1684a7eede910b",
+        "name": "Print reset",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 630,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "6c95ce7241f53c5e",
+        "type": "function",
+        "z": "1d1684a7eede910b",
+        "name": "Parser",
+        "func": "let topic = msg.topic || null\nlet current = msg.payload\nlet threshold = global.get(\"threshold\")\n\nif (!(topic == \"A\" || topic == \"B\")){\n    msg.payload = \"Unknown room \" + topic\n    return msg\n}\n\nflow.set(\"latest\" + topic, current)\n\nif(current > threshold){\n    let counter = flow.get(\"counter\" + topic) || 0\n    if(counter == 1){\n        let alert = {\n            room: topic, reading: current, limit: threshold\n        }\n        msg.alert = alert\n    }\n    flow.set(\"counter\" + topic, (counter + 1))\n}\nelse{\n    flow.set(\"counter\" + topic, 0)\n}\n\n\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 660,
+        "wires": [
+            [
+                "acba10f28b7ac7b3"
+            ]
+        ]
+    },
+    {
+        "id": "acba10f28b7ac7b3",
+        "type": "switch",
+        "z": "1d1684a7eede910b",
+        "name": "Check alert",
+        "property": "alert",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 670,
+        "y": 660,
+        "wires": [
+            [
+                "9f2bbf4e7d506469",
+                "d21e618f0f6cfb90",
+                "4d5427a7db47221c"
+            ]
+        ]
+    },
+    {
+        "id": "9f2bbf4e7d506469",
+        "type": "change",
+        "z": "1d1684a7eede910b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "alert",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 900,
+        "y": 660,
+        "wires": [
+            [
+                "0855686544cef5b2"
+            ]
+        ]
+    },
+    {
+        "id": "0855686544cef5b2",
+        "type": "mqtt out",
+        "z": "1d1684a7eede910b",
+        "name": "MQTT Output",
+        "topic": "neslabpolimi/teaching/nsds26/11",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "d3ffed019cd71f89",
+        "x": 1120,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "01465e331caf2175",
+        "type": "debug",
+        "z": "1d1684a7eede910b",
+        "name": "Print alert",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "039aba88aabdf07f",
+        "type": "function",
+        "z": "1d1684a7eede910b",
+        "name": "Report generator",
+        "func": "let report = {\n    roomA: flow.get(\"latestA\"),\n    roomB: flow.get(\"latestB\"),\n    limit: global.get(\"threshold\"),\n    alerts: flow.get(\"alertCounter\")\n}\n\nmsg.payload = report\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 1120,
+        "wires": [
+            [
+                "0855686544cef5b2",
+                "479c65904dc7d4eb"
+            ]
+        ]
+    },
+    {
+        "id": "d21e618f0f6cfb90",
+        "type": "function",
+        "z": "1d1684a7eede910b",
+        "name": "Increase alertCounter",
+        "func": "let alertCounter = flow.get(\"alertCounter\")\n\nflow.set(\"alertCounter\", (alertCounter + 1))\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4d5427a7db47221c",
+        "type": "function",
+        "z": "1d1684a7eede910b",
+        "name": "Print alert",
+        "func": "let message = \"\"\n\nmessage += \"ALERT room=\" + msg.alert.room\nmessage += \" co2=\" + msg.alert.reading\nmessage += \" limit=\" + msg.alert.limit\n\nmsg.payload = message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 480,
+        "wires": [
+            [
+                "01465e331caf2175"
+            ]
+        ]
+    },
+    {
+        "id": "fb6a3426ca4c679d",
+        "type": "debug",
+        "z": "1d1684a7eede910b",
+        "name": "Print report",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 970,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "479c65904dc7d4eb",
+        "type": "function",
+        "z": "1d1684a7eede910b",
+        "name": "Print report",
+        "func": "let message = \"\"\n\nlet roomA = msg.payload.roomA != undefined \n    ? msg.payload.roomA\n    : \"unknown\"\nlet roomB = msg.payload.roomB != undefined\n    ? msg.payload.roomB\n    : \"unknown\"\n\nmessage += \"REPORT A=\" + roomA\nmessage += \" B=\" + roomB\nmessage += \" limit=\" + msg.payload.limit\nmessage += \" alerts=\" + msg.payload.alerts\n\nmsg.payload = message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 1120,
+        "wires": [
+            [
+                "fb6a3426ca4c679d"
+            ]
+        ]
+    },
+    {
+        "id": "d3ffed019cd71f89",
+        "type": "mqtt-broker",
+        "name": "neslab mqtt server",
+        "broker": "mqtt.neslab.it",
+        "port": "3200",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
     }
 ]
