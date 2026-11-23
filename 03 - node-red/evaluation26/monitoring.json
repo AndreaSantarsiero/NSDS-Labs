@@ -1,0 +1,367 @@
+[
+    {
+        "id": "1d1684a7eede910b",
+        "type": "tab",
+        "label": "Monitoring",
+        "disabled": false,
+        "info": "Starter inputs only. Build and connect all processing nodes as required by the assignment. No automatic triggers. Initialize manually before testing."
+    },
+    {
+        "id": "3ff25c76faad6f50",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "RESET ALL",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 140,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e8f1e5b43eaab419",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "RESET A",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "A",
+        "x": 140,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c9c3d3727dd74c33",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "RESET B",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "B",
+        "x": 140,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "eb5bbd850e00d8a0",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE A 900",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "A",
+        "payload": "900",
+        "payloadType": "num",
+        "x": 160,
+        "y": 390,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "085dd256265e098d",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE A 1000",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "A",
+        "payload": "1000",
+        "payloadType": "num",
+        "x": 160,
+        "y": 450,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b7f326664a14b775",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE A 1100",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "A",
+        "payload": "1100",
+        "payloadType": "num",
+        "x": 160,
+        "y": 510,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "19373f435ce1030e",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE A 1200",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "A",
+        "payload": "1200",
+        "payloadType": "num",
+        "x": 160,
+        "y": 570,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6f8c7671105925f3",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE A 1300",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "A",
+        "payload": "1300",
+        "payloadType": "num",
+        "x": 160,
+        "y": 630,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8ec9f75689b3b981",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE B 900",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "B",
+        "payload": "900",
+        "payloadType": "num",
+        "x": 160,
+        "y": 690,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "94e54685d448ee29",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE B 1000",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "B",
+        "payload": "1000",
+        "payloadType": "num",
+        "x": 160,
+        "y": 750,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7280d1d105e1d204",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE B 1100",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "B",
+        "payload": "1100",
+        "payloadType": "num",
+        "x": 160,
+        "y": 810,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fd48916f4febc312",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE B 1200",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "B",
+        "payload": "1200",
+        "payloadType": "num",
+        "x": 160,
+        "y": 870,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b2f1b41dc2cc6c3c",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "SAMPLE B 1300",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "B",
+        "payload": "1300",
+        "payloadType": "num",
+        "x": 160,
+        "y": 930,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d4b64972e04a8b4f",
+        "type": "inject",
+        "z": "1d1684a7eede910b",
+        "name": "REPORT",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 130,
+        "y": 1110,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5050604f0f361731",
+        "type": "comment",
+        "z": "1d1684a7eede910b",
+        "name": "Starter inputs only - connect your solution. Initialize by clicking SET LIMIT 1000 on Configuration, then RESET ALL here.",
+        "info": "",
+        "x": 510,
+        "y": 30,
+        "wires": []
+    }
+]

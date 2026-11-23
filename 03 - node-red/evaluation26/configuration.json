@@ -1,0 +1,65 @@
+[
+    {
+        "id": "a6cb193398d49929",
+        "type": "tab",
+        "label": "Configuration",
+        "disabled": false,
+        "info": "Starter inputs only. Build and connect all processing nodes as required by the assignment. No automatic triggers. Initialize manually before testing."
+    },
+    {
+        "id": "bbb2679e3377a57c",
+        "type": "inject",
+        "z": "a6cb193398d49929",
+        "name": "SET LIMIT 1000",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1000",
+        "payloadType": "num",
+        "x": 180,
+        "y": 170,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2c253d66bcf8b088",
+        "type": "inject",
+        "z": "a6cb193398d49929",
+        "name": "SET LIMIT 1200",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1200",
+        "payloadType": "num",
+        "x": 180,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9779edd34f1efb73",
+        "type": "comment",
+        "z": "a6cb193398d49929",
+        "name": "Build the configuration branch here. Keep the Configuration and Monitoring tabs separate. Do not hardcode a limit in the monitoring processing nodes.",
+        "info": "",
+        "x": 630,
+        "y": 70,
+        "wires": []
+    }
+]
