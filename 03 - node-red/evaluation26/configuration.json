@@ -71,7 +71,7 @@
         "type": "function",
         "z": "a6cb193398d49929",
         "name": "Set threshold",
-        "func": "global.set(\"threshold\", msg.payload)\n\nreturn msg;",
+        "func": "global.set(\"threshold\", msg.payload)\n\nreturn null;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -81,26 +81,7 @@
         "x": 450,
         "y": 200,
         "wires": [
-            [
-                "2698a683b38ca00a"
-            ]
+            []
         ]
-    },
-    {
-        "id": "2698a683b38ca00a",
-        "type": "debug",
-        "z": "a6cb193398d49929",
-        "name": "Print threshold",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 700,
-        "y": 200,
-        "wires": []
     }
 ]

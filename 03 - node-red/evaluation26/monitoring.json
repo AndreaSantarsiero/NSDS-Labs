@@ -397,7 +397,7 @@
         "type": "function",
         "z": "1d1684a7eede910b",
         "name": "Resetter",
-        "func": "let topic = msg.topic || null\nlet message = \"\"\n\nif (topic == \"A\"){\n    flow.set(\"counterA\", 0)\n    flow.set(\"latestA\", undefined)\n    message = \"Succesfully reset room A\"\n}\nelse if (topic == \"B\") {\n    flow.set(\"counterB\", 0)\n    flow.set(\"latestB\", undefined)\n    message = \"Succesfully reset room B\"\n}\nelse{\n    flow.set(\"counterA\", 0)\n    flow.set(\"counterB\", 0)\n    flow.set(\"latestA\", undefined)\n    flow.set(\"latestB\", undefined)\n    flow.set(\"alertCounter\", 0)\n    message = \"Succesfully reset room A and B\"\n}\n\nmsg.payload = message\nreturn msg",
+        "func": "let topic = msg.topic || null\n\nif (topic == \"A\" || topic == \"B\"){\n    flow.set(\"counter\" + topic, 0)\n    flow.set(\"latest\" + topic, undefined)\n}\nelse{\n    flow.set(\"counterA\", 0)\n    flow.set(\"counterB\", 0)\n    flow.set(\"latestA\", undefined)\n    flow.set(\"latestB\", undefined)\n    flow.set(\"alertCounter\", 0)\n}\n\nreturn null",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -407,34 +407,15 @@
         "x": 380,
         "y": 180,
         "wires": [
-            [
-                "2b838520d1cb30bc"
-            ]
+            []
         ]
-    },
-    {
-        "id": "2b838520d1cb30bc",
-        "type": "debug",
-        "z": "1d1684a7eede910b",
-        "name": "Print reset",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 630,
-        "y": 180,
-        "wires": []
     },
     {
         "id": "6c95ce7241f53c5e",
         "type": "function",
         "z": "1d1684a7eede910b",
         "name": "Parser",
-        "func": "let topic = msg.topic || null\nlet current = msg.payload\nlet threshold = global.get(\"threshold\")\n\nif (!(topic == \"A\" || topic == \"B\")){\n    msg.payload = \"Unknown room \" + topic\n    return msg\n}\n\nflow.set(\"latest\" + topic, current)\n\nif(current > threshold){\n    let counter = flow.get(\"counter\" + topic) || 0\n    if(counter == 1){\n        let alert = {\n            room: topic, reading: current, limit: threshold\n        }\n        msg.alert = alert\n    }\n    flow.set(\"counter\" + topic, (counter + 1))\n}\nelse{\n    flow.set(\"counter\" + topic, 0)\n}\n\n\nreturn msg",
+        "func": "let topic = msg.topic || null\nlet current = msg.payload\nlet threshold = global.get(\"threshold\")\n\n// non gestiamo topic diversi da A e B\nif (!(topic == \"A\" || topic == \"B\")){\n    return null\n}\n\nflow.set(\"latest\" + topic, current)\n\nif(current > threshold){\n    let counter = flow.get(\"counter\" + topic) || 0\n    if(counter == 1){\n        let alert = {\n            room: topic, reading: current, limit: threshold\n        }\n        msg.alert = alert\n    }\n    flow.set(\"counter\" + topic, (counter + 1))\n}\nelse{\n    flow.set(\"counter\" + topic, 0)\n}\n\n\nreturn msg",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
