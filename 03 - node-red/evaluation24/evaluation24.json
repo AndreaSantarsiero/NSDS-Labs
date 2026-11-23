@@ -1,0 +1,288 @@
+[
+    {
+        "id": "a13034e0970d9f68",
+        "type": "tab",
+        "label": "Evaluation24",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "0ba4ee481f3c04b1",
+        "type": "mqtt in",
+        "z": "a13034e0970d9f68",
+        "name": "MQTT input 1",
+        "topic": "neslabpolimi/smartcity/milan",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "d3ffed019cd71f89",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 560,
+        "wires": [
+            [
+                "cf4e28d72cd71080"
+            ]
+        ]
+    },
+    {
+        "id": "cf4e28d72cd71080",
+        "type": "function",
+        "z": "a13034e0970d9f68",
+        "name": "Compute average",
+        "func": "let temperatures = context.get(\"temp\") || [];\n\nif (msg.payload.fields.temperature != undefined) {\n    temperatures.push(msg.payload.fields.temperature);\n\n    if (temperatures.length > 10) {\n        temperatures.shift();\n    }\n\n    let sum = temperatures.reduce((acc, temp) => acc + temp, 0);\n    let avg = sum / temperatures.length;\n\n    context.set(\"temp\", temperatures);\n\n    msg.payload.averageTemperature = avg;\n    flow.set(\"average\", avg);\n    return msg;\n}\nelse {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2b2f0ad0c6da7130",
+        "type": "mqtt out",
+        "z": "a13034e0970d9f68",
+        "name": "",
+        "topic": "neslabpolimi/nsds/eval24/alarm",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "d3ffed019cd71f89",
+        "x": 1110,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "156d25135490e9c0",
+        "type": "mqtt in",
+        "z": "a13034e0970d9f68",
+        "name": "MQTT input 2",
+        "topic": "neslabpolimi/nsds/eval24/k",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "d3ffed019cd71f89",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 680,
+        "wires": [
+            [
+                "a4ae7c85a83ff9a4"
+            ]
+        ]
+    },
+    {
+        "id": "fc725a4ee4b8c3fc",
+        "type": "function",
+        "z": "a13034e0970d9f68",
+        "name": "Compare difference",
+        "func": "let diff = msg.payload.diff;\nlet k = flow.get(\"K\");\n\nif (diff != undefined && k != undefined){\n    if (Math.abs(diff) > k){\n        msg.payload = \"Temperature data is not coherent!\";\n        return msg;\n    }\n    else {\n        return null;\n    }\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 420,
+        "wires": [
+            [
+                "2b2f0ad0c6da7130",
+                "5f26b5ea59e4ebaa"
+            ]
+        ]
+    },
+    {
+        "id": "5f26b5ea59e4ebaa",
+        "type": "debug",
+        "z": "a13034e0970d9f68",
+        "name": "Print not coherent",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1070,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "23cd4e3f9bca142e",
+        "type": "inject",
+        "z": "a13034e0970d9f68",
+        "name": "Trigger every minute",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 220,
+        "wires": [
+            [
+                "fa53b6f398fe89bf"
+            ]
+        ]
+    },
+    {
+        "id": "fa53b6f398fe89bf",
+        "type": "openweathermap",
+        "z": "a13034e0970d9f68",
+        "name": "Milan weather",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 440,
+        "y": 220,
+        "wires": [
+            [
+                "3d9dad308aa8c3ed"
+            ]
+        ]
+    },
+    {
+        "id": "3d9dad308aa8c3ed",
+        "type": "function",
+        "z": "a13034e0970d9f68",
+        "name": "Compute difference",
+        "func": "let tempAvg = flow.get(\"average\");\nlet diff, message;\n\nif (tempAvg != undefined){\n    diff = msg.payload.tempc - tempAvg;\n    message = \"The difference is: \" + diff\n} \nelse {\n    message = \"Difference not computed yet\"\n}\n\nmsg.payload = { message: message, diff: diff }\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 220,
+        "wires": [
+            [
+                "40500a65486d73db",
+                "fc725a4ee4b8c3fc"
+            ]
+        ]
+    },
+    {
+        "id": "40500a65486d73db",
+        "type": "debug",
+        "z": "a13034e0970d9f68",
+        "name": "Print difference",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "a4ae7c85a83ff9a4",
+        "type": "function",
+        "z": "a13034e0970d9f68",
+        "name": "Set K",
+        "func": "flow.set(\"K\", msg.payload)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 680,
+        "wires": [
+            [
+                "0e22f9a4c3cd02d8"
+            ]
+        ]
+    },
+    {
+        "id": "0e22f9a4c3cd02d8",
+        "type": "debug",
+        "z": "a13034e0970d9f68",
+        "name": "Print K",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "d3ffed019cd71f89",
+        "type": "mqtt-broker",
+        "name": "sensor.community",
+        "broker": "mqtt.neslab.it",
+        "port": "3200",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "8cd88b46efe967d7",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]
