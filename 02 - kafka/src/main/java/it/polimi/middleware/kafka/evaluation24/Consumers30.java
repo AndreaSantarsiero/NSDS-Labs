@@ -207,4 +207,90 @@ public class Consumers30 {
             }
         }
     }
+
+
+
+
+    // at most once version of Consumer2
+    private static class Consumer3 {
+        private final String serverAddr;
+        private final String consumerGroupId;
+        private static final boolean autoCommit = false;
+        private static final String offsetResetStrategy = "latest";
+        private static final String inputTopic = "inputTopic";
+        private static final String outputTopic = "outputTopic3";
+
+        private static final int tumblingWindowSize = 10;
+        private final Map<String, List<Integer>> tumblingWindowByKey;
+
+
+        public Consumer3(String serverAddr, String consumerGroupId) {
+            this.serverAddr = serverAddr;
+            this.consumerGroupId = consumerGroupId;
+            this.tumblingWindowByKey = new HashMap<>();
+        }
+
+
+        public void execute() {
+            // Consumer
+            final Properties consumerProps = new Properties();
+            consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
+            consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
+            consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(autoCommit));
+            consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, offsetResetStrategy);
+            consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+            consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
+
+            KafkaConsumer<String, Integer> consumer = new KafkaConsumer<>(consumerProps);
+            consumer.subscribe(Collections.singletonList(inputTopic));
+
+
+            // Producer: no retries, so an output record is never written twice
+            final Properties producerProps = new Properties();
+            producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
+            producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
+            producerProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, String.valueOf(false));
+            producerProps.put(ProducerConfig.ACKS_CONFIG, "1");
+            producerProps.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(0));
+
+            final KafkaProducer<String, Integer> producer = new KafkaProducer<>(producerProps);
+
+            while (true) {
+                final ConsumerRecords<String, Integer> records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
+                if (records.isEmpty()) {
+                    continue;
+                }
+
+                // at most once semantics: commit offsets before processing the records
+                consumer.commitSync();
+
+                for (final ConsumerRecord<String, Integer> record : records) {
+                    System.out.println("Partition: " + record.partition() +
+                            "\tOffset: " + record.offset() +
+                            "\tKey: " + record.key() +
+                            "\tValue: " + record.value()
+                    );
+
+                    if(!tumblingWindowByKey.containsKey(record.key())){
+                        tumblingWindowByKey.put(record.key(), new ArrayList<>());
+                    }
+
+                    List<Integer> tumblingWindow = tumblingWindowByKey.get(record.key());
+                    tumblingWindow.add(record.value());
+
+                    if(tumblingWindow.size() >= tumblingWindowSize){
+                        int sum = 0;
+
+                        for(int value : tumblingWindow){
+                            sum += value;
+                        }
+
+                        producer.send(new ProducerRecord<>(outputTopic, record.key(), sum));
+                        tumblingWindow.clear();
+                    }
+                }
+            }
+        }
+    }
 }
